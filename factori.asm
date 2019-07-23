@@ -32,8 +32,8 @@ newline_char:	db 10
 hex_prefix:		db '0x'
 hex_codes:		db '0123456789abcdef'
 dec_codes:		db '0123456789'
-;cnum:			dq 0fffffffffff0ffffh
-cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
+cnum:			dq 00000000000000001h
+;cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
 
 section .text
 
@@ -82,6 +82,11 @@ print_hex:
 print_dec:
 	mov 	rax, rdi			;read parameter (value) in rax
 	xor 	r8, r8				;clear r8 (r8 is to remmber how much items on stack)
+	cmp 	rax, 10				;if rax is smaller than ten, then just print rax
+	jge 	.div10 				;if greater or equal continue finding 0's
+	push 	rax 				;save rax, prepare for printing
+	inc 	r8 					;tell that there is just one digit
+	jmp 	.print_digit 		;jump straight to printing rax
 .div10:
 	xor 	rdx, rdx			;clear rdx register
 	mov 	rbx, 10				;set divider to 10
