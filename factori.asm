@@ -32,8 +32,12 @@ newline_char:	db 10
 hex_prefix:		db '0x'
 hex_codes:		db '0123456789abcdef'
 dec_codes:		db '0123456789'
-cnum:			dq 00000000000000001h
-;cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
+;cnum:			dq 00000000000000009h
+cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
+anum:			dd 0
+cfnum:			dq 9.0
+afnum:			dq 0.0
+half: 			dq 0.5
 
 section .text
 
@@ -111,8 +115,16 @@ print_dec:
 	ret 						;return to caller
 
 _main:
-	mov 	rdx, cnum			;set value to convert
-	mov 	rdi, [rdx]			;load big number (cnum)
+	mov 	rdx, cnum 
+	fild 	qword[rdx]			;push integer as double float in st(0)
+	fsqrt 						;calculate the square root
+	mov 	rdx, half			;prepare load of 0.5 as double float
+	fsub 	qword[rdx]			;substract 0.5 from the sqrt result
+	frndint 					;then round to nearest integer
+	mov 	rdx, anum 			;prepare to store integer value in anum
+	fistp 	qword[rdx]			;store and pop st(0) from the stack in anum
+tt:
+	mov 	rdi, qword[rdx]		;load big number (cnum)
 	call 	print_dec
 	call 	print_newline
 	call 	print_hexprefix 	;print hex prefix
