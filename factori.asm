@@ -123,8 +123,15 @@ _main:
 	frndint 					;then round to nearest integer
 	mov 	rdx, anum 			;prepare to store integer value in anum
 	fistp 	qword[rdx]			;store and pop st(0) from the stack in anum
-tt:
-	mov 	rdi, qword[rdx]		;load big number (cnum)
+	mov 	rdi, qword[rdx]		;move result in rdi
+	shr 	rdi, 1 				;shift 1 to right
+	jc 		odd 				;if carry flag set, least significant bit was 1, odd
+	shl 	rdi, 1				;rotate 1 bit back to the left
+	dec 	rdi					;subtract 1 when number was even
+	jmp 	print_anum 			;goto print numbers
+odd:
+	shl 	rdi, 1 				;rotate 1 bit back to the left when number was odd
+print_anum:
 	call 	print_dec
 	call 	print_newline
 	call 	print_hexprefix 	;print hex prefix
