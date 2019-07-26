@@ -139,7 +139,6 @@ odd:
 print_anum:
 	mov 	rdx, bnum 			;load address of bnum in rdx
 	mov 	[rdx], rdi 			;copy rdi in bnum, should be the same as anum
-ttt:
 	fild 	dword[rdx]			;load bnum as a double integer
 	mov 	rdx, anum 			;prepare anum for loading
 	fild 	dword[rdx] 			;load anum as a double integer
@@ -160,6 +159,10 @@ ttt:
 	mov 	rdx, cnum			;set value to convert
 	mov 	rdi, [rdx]			;load big number (cnum)
 	call 	print_hex 			;print value in haxadecimal notation
+	call 	print_newline 		;print newline char
+	mov 	rdx, cnum 			;prepare to print cnum and a decimal
+	mov 	rdi, [rdx]			;load the value in rdi our parameter to print_dec
+	call 	print_dec 			;print cnum as a decimal value
 	call 	print_newline 		;print newline char
 
 ; This exit(0) construct is required for OSX
