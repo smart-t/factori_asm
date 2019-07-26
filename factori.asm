@@ -32,13 +32,15 @@ newline_char:	db 10
 hex_prefix:		db '0x'
 hex_codes:		db '0123456789abcdef'
 dec_codes:		db '0123456789'
-;cnum:			dq 00000000000000009h
 cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
+x:				dq 0
+remainder: 		dq 0
 anum:			dd 0
 bnum: 			dd 0
 cfnum:			dq 9.0
 afnum:			dq 0.0
 half: 			dq 0.5
+xtmp: 			dq 0.0
 
 section .text
 
@@ -137,6 +139,21 @@ odd:
 print_anum:
 	mov 	rdx, bnum 			;load address of bnum in rdx
 	mov 	[rdx], rdi 			;copy rdi in bnum, should be the same as anum
+ttt:
+	fild 	dword[rdx]			;load bnum as a double integer
+	mov 	rdx, anum 			;prepare anum for loading
+	fild 	dword[rdx] 			;load anum as a double integer
+	mov 	rdx, x 				;prepare the result, x = anum * bnum
+	fmul 						;perform anum * bnum
+	fistp 	qword[rdx]			;store the result as a 64bit integer in x
+	mov 	rdx, cnum 			;prepare cnum for loading
+	fild 	qword[rdx] 			;load cnum and an 64bit integer (qword)
+	mov 	rdx, x 				;prepare x (anum * bnum) for loading
+	fild 	qword[rdx] 			;load x as a 64bit integer
+	fsub 						;perform floating point subtraction [ToDo could be integer]
+	mov 	rdx, remainder 		;prepare storing the remainder
+	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
+	mov 	rdi, [rdx] 			;move remainder in rdi, such that we can print it
 	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 	call 	print_hexprefix 	;print hex prefix
