@@ -42,8 +42,11 @@ bnum: 			dd 0					; the other factor, when remainder is 0
 
 half: 			dq 0.5					; just a fixed value 0.5, needed for floor func
 
-cnumstr:		db 'cnum = ', 0
+cnumstr:		db 'cnum      = ', 0
 .len			equ $-cnumstr
+
+remainderstr:	db 'remainder = ', 0
+.len			equ $-remainderstr
 
 section .text
 
@@ -161,20 +164,12 @@ print_anum:
 	fild 	qword[rdx] 			;load x as a 64bit integer
 	fsub 						;perform floating point subtraction [ToDo could be integer]
 
-; print remainder as decimal number
-	mov 	rdx, remainder 		;prepare storing the remainder
-	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
-	mov 	rdi, [rdx] 			;move remainder in rdi, such that we can print it
-	call 	print_dec 			;print rdi in decimals
-	call 	print_newline 		;print newline char
-
-; print cnum as hexadecimal number
-	call 	print_hexprefix 	;print hex prefix
-	mov 	rdx, cnum			;set value to convert
-	mov 	rdi, [rdx]			;load big number (cnum)
-	call 	print_hex 			;print value in haxadecimal notation
-	call 	print_newline 		;print newline char
-	call 	print_newline 		;print newline char
+;; print cnum as hexadecimal number
+;	call 	print_hexprefix 	;print hex prefix
+;	mov 	rdx, cnum			;set value to convert
+;	mov 	rdi, [rdx]			;load big number (cnum)
+;	call 	print_hex 			;print value in haxadecimal notation
+;	call 	print_newline 		;print newline char
 
 ; print cnum as a decimal number
 	mov 	rsi, cnumstr 		;load address of cnumstr in sdi
@@ -183,6 +178,16 @@ print_anum:
 	mov 	rdx, cnum 			;prepare to print cnum and a decimal
 	mov 	rdi, [rdx]			;load the value in rdi our parameter to print_dec
 	call 	print_dec 			;print cnum as a decimal value
+	call 	print_newline 		;print newline char
+
+; print remainder as decimal number
+	mov 	rsi, remainderstr	;load address of cnumstr in sdi
+	mov 	rdx, remainderstr.len 	;load len of cnumstr in edx
+	call 	print_string 		;print cnumstr
+	mov 	rdx, remainder 		;prepare storing the remainder
+	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
+	mov 	rdi, [rdx] 			;move remainder in rdi, such that we can print it
+	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 
 ; This exit(0) construct is required for OSX
