@@ -32,15 +32,18 @@ newline_char:	db 10
 hex_prefix:		db '0x'
 hex_codes:		db '0123456789abcdef'
 dec_codes:		db '0123456789'
-cnum:			dq 428987894557991123; 05f412371d60b871h	; 428987894557991123 in base-10
-x:				dq 0
-remainder: 		dq 0
-anum:			dd 0
-bnum: 			dd 0
-cfnum:			dq 9.0
-afnum:			dq 0.0
-half: 			dq 0.5
-xtmp: 			dq 0.0
+cnum:			dq 428987894557991123	; 05f412371d60b871h / this is the big number
+									 	; the number that we would like to split in
+									 	; factors
+x:				dq 0					; the product anum * bnum, temp interim result
+remainder: 		dq 0					; remainder of cnum - x
+anum:			dd 0					; one of the factors that we found
+bnum: 			dd 0					; the other factor, when remainder is 0
+
+half: 			dq 0.5					; just a fixed value 0.5, needed for floor func
+
+cnumstr:		db 'cnum = ', 0
+.len			equ $-cnumstr
 
 section .text
 
@@ -58,8 +61,15 @@ print_hexprefix:
 	mov		rax, 0x02000004		;system call number 1, write
 	mov		rdi, 1				;where to write, 1 = stdout
 	mov 	rsi, hex_prefix		;hex prefix chars
-	mov		rdx, 2			;how many bytes to write
+	mov		rdx, 2				;how many bytes to write
 	syscall 					;invoke system call with the above
+	ret
+
+; Function to print string
+print_string:
+	mov 	rax, 0x02000004		;system call number 1, write
+	mov		rdi, 1				;where to write, 1 = stdout
+	syscall 					; invoke system call with the above
 	ret
 
 ; Funcion to print number in haxadecimal notation
@@ -150,16 +160,26 @@ print_anum:
 	mov 	rdx, x 				;prepare x (anum * bnum) for loading
 	fild 	qword[rdx] 			;load x as a 64bit integer
 	fsub 						;perform floating point subtraction [ToDo could be integer]
+
+; print remainder as decimal number
 	mov 	rdx, remainder 		;prepare storing the remainder
 	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
 	mov 	rdi, [rdx] 			;move remainder in rdi, such that we can print it
 	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
+
+; print cnum as hexadecimal number
 	call 	print_hexprefix 	;print hex prefix
 	mov 	rdx, cnum			;set value to convert
 	mov 	rdi, [rdx]			;load big number (cnum)
 	call 	print_hex 			;print value in haxadecimal notation
 	call 	print_newline 		;print newline char
+	call 	print_newline 		;print newline char
+
+; print cnum as a decimal number
+	mov 	rsi, cnumstr 		;load address of cnumstr in sdi
+	mov 	rdx, cnumstr.len 	;load len of cnumstr in edx
+	call 	print_string 		;print cnumstr
 	mov 	rdx, cnum 			;prepare to print cnum and a decimal
 	mov 	rdi, [rdx]			;load the value in rdi our parameter to print_dec
 	call 	print_dec 			;print cnum as a decimal value
