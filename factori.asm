@@ -147,7 +147,7 @@ _main:
 	fsqrt 						;calculate the square root
 	mov 	rdx, half			;prepare load of 0.5 as double float
 	fsub 	qword[rdx]			;substract 0.5 from the sqrt result
-	frndint 					;then round to nearest integer
+	frndint 					;then round to nearest integer (floored sqrt)
 	mov 	rdx, anum 			;prepare to store integer value in anum
 	fistp 	dword[rdx]			;store and pop st(0) from the stack in anum
 	xor 	rdi, rdi			;make sure rdi is 0
