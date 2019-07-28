@@ -177,32 +177,12 @@ print_anum:
 	fsub 						;perform floating point subtraction [ToDo could be integer]
 
 ; print cnum as a decimal number
-	mov 	rsi, bnumstr 		;load address of bnumstr in rsi
-	mov 	rdx, bnumstr.len 	;load len of bnumstr in rdx
-	call 	print_string 		;print bnumstr
-	xor 	rdx, rdx			;make sure rdx is 0
-	mov 	rdx, bnum 			;prepare to print bnum and a decimal
-	mov 	rdi, qword[rdx]		;load the value in rdi our parameter to print_dec
-	call 	print_dec 			;print bnum as a decimal value
-	call 	print_newline 		;print newline char
-
-; print cnum as a decimal number
 	mov 	rsi, cnumstr 		;load address of cnumstr in rsi
 	mov 	rdx, cnumstr.len 	;load len of cnumstr in rdx
 	call 	print_string 		;print cnumstr
 	mov 	rdx, cnum 			;prepare to print cnum and a decimal
 	mov 	rdi, qword[rdx]		;load the value in rdi our parameter to print_dec
 	call 	print_dec 			;print cnum as a decimal value
-	call 	print_newline 		;print newline char
-
-; print remainder as decimal number
-	mov 	rsi, remainderstr	;load address of remainderstr in sdi
-	mov 	rdx, remainderstr.len 	;load len of remainderstr in edx
-	call 	print_string 		;print remainderstr
-	mov 	rdx, remainder 		;prepare storing the remainder
-	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
-	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
-	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 
 ; start of loop to find the first factor of cnum
