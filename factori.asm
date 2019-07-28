@@ -112,7 +112,7 @@ print_hex:
 
 print_dec:
 	mov 	rax, rdi			;read parameter (value) in rax
-	xor 	r8, r8				;clear r8 (r8 is to remmber how much items on stack)
+	xor 	r8, r8				;clear r8 (r8 is to remember how much items on stack)
 	cmp 	rax, 10				;if rax is smaller than ten, then just print rax
 	jge 	.div10 				;if greater or equal continue finding 0's
 	push 	rax 				;save rax, prepare for printing
