@@ -175,6 +175,8 @@ print_anum:
 	mov 	rdx, x 				;prepare x (anum * bnum) for loading
 	fild 	qword[rdx] 			;load x as a 64bit integer
 	fsub 						;perform floating point subtraction [ToDo could be integer]
+	mov 	rdx, remainder 		;prepare to store result in remainder (memory)
+	fistp 	qword[rdx]			;store remainder in memory
 
 ; print cnum as a decimal number
 	mov 	rsi, cnumstr 		;load address of cnumstr in rsi
