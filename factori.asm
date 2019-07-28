@@ -35,7 +35,6 @@ dec_codes:		db '0123456789'
 cnum:			dq 428987894557991123	;05f412371d60b871h / this is the big number
 									 	;the number that we would like to split in
 									 	;factors
-ctmp: 			dq 0
 x:				dq 0					;the product anum * bnum, temp interim result
 jump:			dq 2					;jump to be subtracted from anum in each iter.
 
@@ -43,10 +42,8 @@ remainder: 		dq 0					; remainder of cnum - x
 anum:			dd 0					; one of the factors that we found
 anumext: 		dd 0
 bnum: 			dd 0					; the other factor, when remainder is 0
-btmp: 			dd 0
 
 half: 			dq 0.5					; just a fixed value 0.5, needed for floor func
-rx: 			dq 0.0
 
 cnumstr:		db 'cnum      = ', 0
 .len			equ $-cnumstr
@@ -179,13 +176,6 @@ print_anum:
 	fild 	qword[rdx] 			;load x as a 64bit integer
 	fsub 						;perform floating point subtraction [ToDo could be integer]
 
-;; print cnum as hexadecimal number
-;	call 	print_hexprefix 	;print hex prefix
-;	mov 	rdx, cnum			;set value to convert
-;	mov 	rdi, [rdx]			;load big number (cnum)
-;	call 	print_hex 			;print value in haxadecimal notation
-;	call 	print_newline 		;print newline char
-
 ; print cnum as a decimal number
 	mov 	rsi, bnumstr 		;load address of bnumstr in rsi
 	mov 	rdx, bnumstr.len 	;load len of bnumstr in rdx
@@ -215,100 +205,63 @@ print_anum:
 	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 
-;	mov 	r8, 064h
-; start of loop
+; start of loop to find the first factor of cnum
 next:
-;	push 	r8
 	xor 	rdx, rdx			;make sure rdx is 0
-	mov 	rdx, bnum 			;prepare to print bnum and a decimal
-	mov 	rax, qword[rdx]
-	shl 	rax, 1
-	mov 	rdx, remainder
-	add 	rax, qword[rdx]
-	mov 	rdx, remainder
+	mov 	rdx, bnum 			;prepare bnum for calculations, must be in register
+	mov 	rax, qword[rdx]		;load bnum in rax
+	shl 	rax, 1				;shift rax 1bit to right (multiply by 2)
+	mov 	rdx, remainder 		;prepare remainder for calculation, must be in register
+	add 	rax, qword[rdx] 	;add remainder to bnum * jump
+	mov 	rdx, remainder 		;prepare remainder to capture result in memory
+	mov 	qword[rdx], rax 	;store the result in remainder (memory)
+
+; adjust anum by subtracting jump (=2)
+	mov 	rdx, anum 			;prepare anum for adjustment with jump
+	fild 	dword[rdx] 			;load anum and convert to double float
+	mov 	rdx, jump 			;prepare jump for adjustment
+	fild 	qword[rdx] 			;load jump and convert to double float
+	fsub 						;subtract jump from anum
+ 	mov 	rdx, anum 			;prepare anum to store result in memory
+	fistp 	qword[rdx] 			;store adjusted anum in anum memory
+
+; simple integer division, dividing rax (remainder) by rbx (anum))
+	mov 	rdx, remainder 		;prepare remainder for loading in rax
+	mov 	rax, qword[rdx] 	;load remainder in rax as qword
+	mov 	rdx, anum 			;prepare anum for loading in rbx
+	mov 	rbx, qword[rdx] 	;load anum in rbx
+	xor 	rdx, rdx  			;make sure the rdx register is 0
+	idiv 	rbx 				;perform division (rax=remainder / rbx=anum)
+	mov 	rbx, x 				;prepare x for storing the remainder (rdx)
+	mov 	qword[rbx], rdx 	;store remainder of division in x (memory)
+	test 	rdx, rdx 			;test to see if division remainder was 0
+	jnz 	next 				;if not the case, jump to start of loop
+
+; calculate bnum
+	mov 	rdx, cnum 			;prepare cnum for loading in rax
+	mov 	rax, qword[rdx]		;load cnum in rax
+	mov 	rdx, anum 			;prepare anum for loading in rbx
+	mov 	rbx, qword[rdx] 	;load anum in rbx
+	xor 	rdx, rdx			;make sure the rdx register is 0
+	idiv 	rbx 				;perform division (rax=cnum / rbx=anum)
+	mov 	rdx, bnum 			;prepare bnum for storing the result
 	mov 	qword[rdx], rax
 
-;; print remainder as decimal number
-;	mov 	rsi, remainderstr	;load address of remainderstr in sdi
-;	mov 	rdx, remainderstr.len 	;load len of remainderstr in edx
-;	call 	print_string 		;print remainderstr
-;	mov 	rdx, remainder 		;prepare storing the remainder
-;	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
-;	call 	print_dec 			;print rdi in decimals
-;	call 	print_newline 		;print newline char
-
-	mov 	rdx, anum
-	fild 	dword[rdx]
-	mov 	rdx, jump
-	fild 	qword[rdx]
-	fsub
- 	mov 	rdx, anum
-	fistp 	qword[rdx]
-
-;; print anum as decimal number
-;	mov 	rsi, anumstr		;load address of anumstr in sdi
-;	mov 	rdx, anumstr.len 	;load len of anumstr in edx
-;	call 	print_string 		;print anumstr
-;	mov 	rdx, anum 			;prepare storing the anum
-;	mov 	rdi, qword[rdx] 	;move anum in rdi, such that we can print it
-;	call 	print_dec 			;print rdi in decimals
-;	call 	print_newline 		;print newline char
-
-;; print bnum as decimal number
-;	mov 	rsi, bnumstr		;load address of bnumstr in sdi
-;	mov 	rdx, bnumstr.len 	;load len of bnumstr in edx
-;	call 	print_string 		;print bnumstr
-;	mov 	rdx, bnum 			;prepare storing the anum
-;	mov 	rdi, qword[rdx] 	;move bnum in rdi, such that we can print it
-;	call 	print_dec 			;print rdi in decimals
-;	call 	print_newline 		;print newline char
-
-; divide remainder by anum and calculate remainder x
-	mov 	rdx, remainder
-	fild 	qword[rdx]
-	mov 	rdx, anum
-	fild 	dword[rdx]
-	fdivp
-	mov 	rdx, rx
-	fst 	qword[rdx]
-	mov 	rdx, x 
-	fistp 	qword[rdx]
-	mov 	rdx, rx
-	fld 	qword[rdx]
-	mov 	rdx, x
-	fild 	qword[rdx]
-	fsub
-	mov 	rdx, anum 
-	fild 	dword[rdx]
-	fmul 
-	mov 	rdx, x
-	fistp 	qword[rdx]
-
-;; print anum as decimal number
-;	mov 	rsi, xstr			;load address of xstr in sdi
-;	mov 	rdx, xstr.len 		;load len of xstr in edx
-;	call 	print_string 		;print xstr
-	mov 	rdx, x 				;prepare storing the x
-	mov 	rdi, qword[rdx] 	;move x in rdi, such that we can print it
-;	push	rdi
-;	call 	print_dec 			;print rdi in decimals
-;	call 	print_newline 		;print newline char
-;	pop 	rdi
-;	pop 	r8
-;	dec 	r8
-;	test 	r8, r8
-;	jnz 	tt
-;	jmp 	ttt
-	test 	rdi, rdi
-	jnz 	next
-
-tt:
 ; print anum as decimal number
 	mov 	rsi, anumstr		;load address of anumstr in sdi
 	mov 	rdx, anumstr.len 	;load len of anumstr in edx
 	call 	print_string 		;print anumstr
-	mov 	rdx, anum 				;prepare storing the anum
-	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
+	mov 	rdx, anum 			;prepare storing the anum
+	mov 	rdi, qword[rdx] 	;move anum in rdi, such that we can print it
+	call 	print_dec 			;print rdi in decimals
+	call 	print_newline 		;print newline char
+
+; print bnum as decimal number
+	mov 	rsi, bnumstr		;load address of bnumstr in sdi
+	mov 	rdx, bnumstr.len 	;load len of bnumstr in edx
+	call 	print_string 		;print bnumstr
+	mov 	rdx, bnum 			;prepare storing the bnum
+	mov 	rdi, qword[rdx] 	;move bnum in rdi, such that we can print it
 	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 
