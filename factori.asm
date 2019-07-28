@@ -32,18 +32,33 @@ newline_char:	db 10
 hex_prefix:		db '0x'
 hex_codes:		db '0123456789abcdef'
 dec_codes:		db '0123456789'
-cnum:			dq 428987894557991123	; 05f412371d60b871h / this is the big number
-									 	; the number that we would like to split in
-									 	; factors
-x:				dq 0					; the product anum * bnum, temp interim result
+cnum:			dq 428987894557991123	;05f412371d60b871h / this is the big number
+									 	;the number that we would like to split in
+									 	;factors
+ctmp: 			dq 0
+x:				dq 0					;the product anum * bnum, temp interim result
+jump:			dq 2					;jump to be subtracted from anum in each iter.
+
 remainder: 		dq 0					; remainder of cnum - x
 anum:			dd 0					; one of the factors that we found
+anumext: 		dd 0
 bnum: 			dd 0					; the other factor, when remainder is 0
+btmp: 			dd 0
 
 half: 			dq 0.5					; just a fixed value 0.5, needed for floor func
+rx: 			dq 0.0
 
 cnumstr:		db 'cnum      = ', 0
 .len			equ $-cnumstr
+
+anumstr:		db 'anum      = ', 0
+.len			equ $-anumstr
+
+bnumstr:		db 'bnum      = ', 0
+.len			equ $-bnumstr
+
+xstr:			db 'x         = ', 0
+.len			equ $-xstr
 
 remainderstr:	db 'remainder = ', 0
 .len			equ $-remainderstr
@@ -172,21 +187,128 @@ print_anum:
 ;	call 	print_newline 		;print newline char
 
 ; print cnum as a decimal number
-	mov 	rsi, cnumstr 		;load address of cnumstr in sdi
-	mov 	rdx, cnumstr.len 	;load len of cnumstr in edx
+	mov 	rsi, bnumstr 		;load address of bnumstr in rsi
+	mov 	rdx, bnumstr.len 	;load len of bnumstr in rdx
+	call 	print_string 		;print bnumstr
+	xor 	rdx, rdx			;make sure rdx is 0
+	mov 	rdx, bnum 			;prepare to print bnum and a decimal
+	mov 	rdi, qword[rdx]		;load the value in rdi our parameter to print_dec
+	call 	print_dec 			;print bnum as a decimal value
+	call 	print_newline 		;print newline char
+
+; print cnum as a decimal number
+	mov 	rsi, cnumstr 		;load address of cnumstr in rsi
+	mov 	rdx, cnumstr.len 	;load len of cnumstr in rdx
 	call 	print_string 		;print cnumstr
 	mov 	rdx, cnum 			;prepare to print cnum and a decimal
-	mov 	rdi, [rdx]			;load the value in rdi our parameter to print_dec
+	mov 	rdi, qword[rdx]		;load the value in rdi our parameter to print_dec
 	call 	print_dec 			;print cnum as a decimal value
 	call 	print_newline 		;print newline char
 
 ; print remainder as decimal number
-	mov 	rsi, remainderstr	;load address of cnumstr in sdi
-	mov 	rdx, remainderstr.len 	;load len of cnumstr in edx
-	call 	print_string 		;print cnumstr
+	mov 	rsi, remainderstr	;load address of remainderstr in sdi
+	mov 	rdx, remainderstr.len 	;load len of remainderstr in edx
+	call 	print_string 		;print remainderstr
 	mov 	rdx, remainder 		;prepare storing the remainder
 	fistp 	qword[rdx] 			;store the remainder as a 64bit integer value
-	mov 	rdi, [rdx] 			;move remainder in rdi, such that we can print it
+	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
+	call 	print_dec 			;print rdi in decimals
+	call 	print_newline 		;print newline char
+
+;	mov 	r8, 064h
+; start of loop
+next:
+;	push 	r8
+	xor 	rdx, rdx			;make sure rdx is 0
+	mov 	rdx, bnum 			;prepare to print bnum and a decimal
+	mov 	rax, qword[rdx]
+	shl 	rax, 1
+	mov 	rdx, remainder
+	add 	rax, qword[rdx]
+	mov 	rdx, remainder
+	mov 	qword[rdx], rax
+
+;; print remainder as decimal number
+;	mov 	rsi, remainderstr	;load address of remainderstr in sdi
+;	mov 	rdx, remainderstr.len 	;load len of remainderstr in edx
+;	call 	print_string 		;print remainderstr
+;	mov 	rdx, remainder 		;prepare storing the remainder
+;	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
+;	call 	print_dec 			;print rdi in decimals
+;	call 	print_newline 		;print newline char
+
+	mov 	rdx, anum
+	fild 	dword[rdx]
+	mov 	rdx, jump
+	fild 	qword[rdx]
+	fsub
+ 	mov 	rdx, anum
+	fistp 	qword[rdx]
+
+;; print anum as decimal number
+;	mov 	rsi, anumstr		;load address of anumstr in sdi
+;	mov 	rdx, anumstr.len 	;load len of anumstr in edx
+;	call 	print_string 		;print anumstr
+;	mov 	rdx, anum 			;prepare storing the anum
+;	mov 	rdi, qword[rdx] 	;move anum in rdi, such that we can print it
+;	call 	print_dec 			;print rdi in decimals
+;	call 	print_newline 		;print newline char
+
+;; print bnum as decimal number
+;	mov 	rsi, bnumstr		;load address of bnumstr in sdi
+;	mov 	rdx, bnumstr.len 	;load len of bnumstr in edx
+;	call 	print_string 		;print bnumstr
+;	mov 	rdx, bnum 			;prepare storing the anum
+;	mov 	rdi, qword[rdx] 	;move bnum in rdi, such that we can print it
+;	call 	print_dec 			;print rdi in decimals
+;	call 	print_newline 		;print newline char
+
+; divide remainder by anum and calculate remainder x
+	mov 	rdx, remainder
+	fild 	qword[rdx]
+	mov 	rdx, anum
+	fild 	dword[rdx]
+	fdivp
+	mov 	rdx, rx
+	fst 	qword[rdx]
+	mov 	rdx, x 
+	fistp 	qword[rdx]
+	mov 	rdx, rx
+	fld 	qword[rdx]
+	mov 	rdx, x
+	fild 	qword[rdx]
+	fsub
+	mov 	rdx, anum 
+	fild 	dword[rdx]
+	fmul 
+	mov 	rdx, x
+	fistp 	qword[rdx]
+
+;; print anum as decimal number
+;	mov 	rsi, xstr			;load address of xstr in sdi
+;	mov 	rdx, xstr.len 		;load len of xstr in edx
+;	call 	print_string 		;print xstr
+	mov 	rdx, x 				;prepare storing the x
+	mov 	rdi, qword[rdx] 	;move x in rdi, such that we can print it
+;	push	rdi
+;	call 	print_dec 			;print rdi in decimals
+;	call 	print_newline 		;print newline char
+;	pop 	rdi
+;	pop 	r8
+;	dec 	r8
+;	test 	r8, r8
+;	jnz 	tt
+;	jmp 	ttt
+	test 	rdi, rdi
+	jnz 	next
+
+tt:
+; print anum as decimal number
+	mov 	rsi, anumstr		;load address of anumstr in sdi
+	mov 	rdx, anumstr.len 	;load len of anumstr in edx
+	call 	print_string 		;print anumstr
+	mov 	rdx, anum 				;prepare storing the anum
+	mov 	rdi, qword[rdx] 	;move remainder in rdi, such that we can print it
 	call 	print_dec 			;print rdi in decimals
 	call 	print_newline 		;print newline char
 
