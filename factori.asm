@@ -88,6 +88,9 @@ print_string:
 
 ; Funcion to print number in haxadecimal notation
 print_hex:
+	push 	rdi					;push rdi to stack
+	call 	print_hexprefix 	;call function to print hexprefix
+	pop 	rdi					;pop rdi value back from stack
 	mov 	rax, rdi			;read parameter (value) in rax
 	mov 	rcx, 64				;how far are we shifting
 .iterate:
@@ -158,7 +161,7 @@ _main:
 	dec 	rdi					;subtract 1 when number was even
 	mov 	rdx, anum 			;load address of anum in rdx
 	mov 	dword[rdx], edi 	;copy edi in anum
-	jmp 	calc_remainder 			;goto print numbers
+	jmp 	calc_remainder 		;goto print numbers
 odd:
 	shl 	rdi, 1 				;rotate 1 bit back to the left when number was odd
 calc_remainder:
@@ -198,14 +201,13 @@ next:
 	mov 	rdx, remainder 		;prepare remainder to capture result in memory
 	mov 	qword[rdx], rax 	;store the result in remainder (memory)
 
-; adjust anum by subtracting jump (=2)
-	mov 	rdx, anum 			;prepare anum for adjustment with jump
-	fild 	dword[rdx] 			;load anum and convert to double float
-	mov 	rdx, jump 			;prepare jump for adjustment
-	fild 	qword[rdx] 			;load jump and convert to double float
-	fsub 						;subtract jump from anum
- 	mov 	rdx, anum 			;prepare anum to store result in memory
-	fistp 	dword[rdx] 			;store adjusted anum in anum memory
+; simple sub (subtract) jump (=2) from anum
+	mov 	rdx, anum 			;prepare anum for loading in rax
+	mov 	rax, qword[rdx] 	;load anum value in rax
+	mov 	rdx, jump 			;prepare jump for sub opertion
+	sub 	rax, qword[rdx] 	;subtract jump from anum
+	mov 	rdx, anum 			;prepare anum to store value from rax in anum memory
+	mov 	qword[rdx], rax 	;store rax value in anum memory
 
 ; simple integer division, dividing rax (remainder) by rbx (anum))
 	xor 	rbx, rbx			;make sure rbx is 0
