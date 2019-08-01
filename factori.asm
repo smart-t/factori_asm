@@ -165,21 +165,23 @@ _main:
 odd:
 	shl 	rdi, 1 				;rotate 1 bit back to the left when number was odd
 calc_remainder:
-	mov 	rdx, bnum 			;load address of bnum in rdx
-	mov 	dword[rdx], edi 	;copy edi in bnum, should be the same as anum
-	fild 	dword[rdx]			;load bnum as a double integer
-	mov 	rdx, anum 			;prepare anum for loading
-	fild 	dword[rdx] 			;load anum as a double integer
-	mov 	rdx, x 				;prepare the result, x = anum * bnum
-	fmul 						;perform anum * bnum
-	fistp 	qword[rdx]			;store the result as a 64bit integer in x
-	mov 	rdx, cnum 			;prepare cnum for loading
-	fild 	qword[rdx] 			;load cnum and an 64bit integer (qword)
-	mov 	rdx, x 				;prepare x (anum * bnum) for loading
-	fild 	qword[rdx] 			;load x as a 64bit integer
-	fsub 						;perform floating point subtraction [ToDo could be integer]
-	mov 	rdx, remainder 		;prepare to store result in remainder (memory)
-	fistp 	qword[rdx]			;store remainder in memory
+	mov 	rdx, bnum 
+	mov 	dword[rdx], edi
+	xor 	rax, rax 
+	mov 	eax, edi 
+	mov 	rdx, anum 
+	xor 	rbx, rbx
+	mov 	ebx, dword[rdx]
+	imul 	rbx
+	mov 	rdx, x
+	mov 	qword[rdx], rax
+	mov 	rdx, cnum 
+	mov 	rax, qword[rdx]
+	mov 	rdx, x 
+	mov 	rbx, qword[rdx]
+	sub 	rax, rbx
+	mov 	rdx, remainder 
+	mov 	qword[rdx], rax
 
 ; print cnum as a decimal number
 	mov 	rsi, cnumstr 		;load address of cnumstr in rsi
