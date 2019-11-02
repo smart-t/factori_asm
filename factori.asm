@@ -7,7 +7,7 @@
 ; Build the OSX executable using the following commands:
 ; 
 ; $ nasm -fmacho64 -g -O0 factori.asm -o factori.o
-; $ ld -macosx_version_min 10.8.0 -o factori factori.o -lSystem
+; $ ld -macosx_version_min 10.8.0 -o factori factori.o -lSystem, -no_pie
 ;
 ; Debug and show symbols using the following commands:
 ;
@@ -32,9 +32,10 @@ newline_char:	db 10
 hex_prefix:	db '0x'
 hex_codes:	db '0123456789abcdef'
 dec_codes:	db '0123456789'
-cnum:		dq 428987894557991123	;05f412371d60b871h / this is the big number
-				 	;the number that we would like to split in
-				 	;factors
+cnum:		dq 507906452803
+;cnum:		dq 428987894557991123	;05f412371d60b871h / this is the big number
+;				 	;the number that we would like to split in
+;				 	;factors
 x:		dq 0			;the product anum * bnum, temp interim result
 jump:		dq 2			;jump to be subtracted from anum in each iter.
 
