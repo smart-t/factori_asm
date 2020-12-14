@@ -32,7 +32,7 @@ newline_char:	db 10
 hex_prefix:	db '0x'
 hex_codes:	db '0123456789abcdef'
 dec_codes:	db '0123456789'
-cnum:		dq 428987894557991123	;05f412371d60b871h / this is the big number
+cnum:		dq 05f412371d60b871h
 				 	;the number that we would like to split in
 				 	;factors
 x:		dq 0			;the product anum * bnum, temp interim result

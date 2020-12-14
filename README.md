@@ -17,6 +17,10 @@ to build use the follwing:
 
 $ nasm -fmacho64 -g -O0 factori.asm -o factori.o
 $ ld -macosx_version_min 10.8.0 -o factori factori.o -lSystem
+  
+in OSX Big Sur use the following instead  
+  
+$ /usr/bin/ld -e _main -macosx_version_min 10.13.0 -o factori factori.o -static
 
 to run:
 
