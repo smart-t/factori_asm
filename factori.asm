@@ -7,7 +7,7 @@
 ; Build the OSX executable using the following commands:
 ; 
 ; $ nasm -fmacho64 -g -O0 factori.asm -o factori.o
-; $ ld -macosx_version_min 10.8.0 -o factori factori.o -lSystem, -no_pie
+; $ ld -macosx_version_min 10.8.0 -o factori factori.o -no_pie -syslibroot `xcrun -sdk macosx --show-sdk-path` -lSystem
 ;
 ; Debug and show symbols using the following commands:
 ;
@@ -32,7 +32,7 @@ newline_char:	db 10
 hex_prefix:	db '0x'
 hex_codes:	db '0123456789abcdef'
 dec_codes:	db '0123456789'
-cnum:		dq 05f412371d60b871h
+cnum:		dq 05f412379c1260d3h
 				 	;the number that we would like to split in
 				 	;factors
 x:		dq 0			;the product anum * bnum, temp interim result

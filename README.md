@@ -4,7 +4,7 @@ This is an assembly version of the mbal i(Maxime Bellousov) algorithm to find
 factors of one big integer. The big integer (428987894557991123) is hardcoded
 in the algorithm to produce the **CALCULATED** factors 218323891 * 1964915028.
 
-> ```Author : Toon Leijtens / Date : 28.07.2019 / Carouge - Genève```  
+> ```Author : Toon Leijtens / Date : 28.07.2019 / Carouge - Geneve```  
 
 ## note from the programmer
 
@@ -16,7 +16,7 @@ This assembly script was created for OSX. You will need the following:
 to build use the follwing:
 
 $ nasm -fmacho64 -g -O0 factori.asm -o factori.o
-$ ld -macosx_version_min 10.8.0 -o factori factori.o -lSystem
+$ ld -macosx_version_min 10.8.0 -o factori factori.o -no_pie -syslibroot `xcrun -sdk macosx --show-sdk-path` -lSystem
   
 in OSX Big Sur use the following instead  
   
